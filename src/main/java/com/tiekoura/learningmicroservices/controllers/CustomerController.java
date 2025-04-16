@@ -1,6 +1,6 @@
 package com.tiekoura.learningmicroservices.controllers;
 
-import com.tiekoura.learningmicroservices.entities.Customer;
+import com.tiekoura.learningmicroservices.dto.CustomerDto;
 import com.tiekoura.learningmicroservices.exception.CustomerWithEmailAlreadyExist;
 import com.tiekoura.learningmicroservices.exception.ErrorResponse;
 import com.tiekoura.learningmicroservices.services.CustomerService;
@@ -22,20 +22,29 @@ public class CustomerController {
 
 
     @PostMapping()
-    public Customer createCustomer(@RequestBody Customer customer) {
+    public CustomerDto createCustomer(@RequestBody CustomerDto customer) {
         return customerService.addCustomer(customer);
     }
 
     @GetMapping("/{id}")
-    public Customer getCustomer(@PathVariable Long id) {
+    public CustomerDto getCustomer(@PathVariable Long id) {
         return customerService.getCustomer(id);
     }
 
     @GetMapping()
-    public List<Customer> getAllCustomers() {
+    public List<CustomerDto> getAllCustomers() {
         return customerService.getCustomers();
     }
 
+    @PatchMapping("/{id}")
+    public void updateCustomer(@PathVariable Long id, @RequestBody CustomerDto customer) {
+         customerService.updateCustomer(id,customer);
+    }
+
+    @DeleteMapping("/{id}")
+    public void deleteCustomer(@PathVariable Long id) {
+        customerService.deleteCustomer(id);
+    }
 
 
     @ExceptionHandler(CustomerWithEmailAlreadyExist.class)

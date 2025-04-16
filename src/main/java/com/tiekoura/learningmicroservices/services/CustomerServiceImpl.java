@@ -1,60 +1,68 @@
 package com.tiekoura.learningmicroservices.services;
 
 import com.tiekoura.learningmicroservices.dao.CustomerRepository;
+import com.tiekoura.learningmicroservices.dto.CustomerDto;
 import com.tiekoura.learningmicroservices.entities.Customer;
 import com.tiekoura.learningmicroservices.exception.CustomerWithEmailAlreadyExist;
 import com.tiekoura.learningmicroservices.exception.NoSuchCustomerExistsException;
+import com.tiekoura.learningmicroservices.mapper.CustomerMapper;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
 public class CustomerServiceImpl implements CustomerService {
-
-
     private final   CustomerRepository customerRepository;
+    private final CustomerMapper customerMapper;
 
-    public CustomerServiceImpl(CustomerRepository customerRepository) {
+    public CustomerServiceImpl(CustomerRepository customerRepository, CustomerMapper customerMapper) {
         this.customerRepository = customerRepository;
+        this.customerMapper = customerMapper;
     }
 
 
     @Override
-    public Customer addCustomer(Customer customer) throws CustomerWithEmailAlreadyExist {
-        Customer existingCustomer = customerRepository.findByEmail(customer.getEmail());
-        if (existingCustomer == null) {
-            return customerRepository.save(customer);
-        } else {
-            throw new CustomerWithEmailAlreadyExist("Customer with email " + customer.getEmail() + " already exist");
-        }
+    public CustomerDto addCustomer(CustomerDto customerdto) throws CustomerWithEmailAlreadyExist {
+      Customer customer = customerMapper.toEntity(customerdto);
+      if(customerRepository.existsByEmail(customer.getEmail())) {
+          throw new CustomerWithEmailAlreadyExist("Customer with email " + customer.getEmail() + " already exist");
+      }
+      return customerMapper.toDto(customerRepository.save(customer));
     }
 
     @Override
-    public Customer getCustomer(Long id) {
-        return customerRepository.findById(id).orElseThrow(
-                () -> new NoSuchCustomerExistsException("Customer with id " + id + " does not exist")
+    public CustomerDto getCustomer(Long id) {
+        return customerMapper.toDto(
+                customerRepository.findById(id).orElseThrow(
+                        () -> new NoSuchCustomerExistsException("Customer with id " + id + " does not exist")
+                )
         );
     }
 
     @Override
-    public void updateCustomer(Customer customer) {
-        Customer existingCustomer = this.getCustomer(customer.getId());
+    public void updateCustomer(Long id, CustomerDto customer) {
+       Customer existingCustomer = customerMapper.toEntity(this.getCustomer(id))  ;
         if (existingCustomer != null) {
             existingCustomer.setFirstName(customer.getFirstName());
             existingCustomer.setLastName(customer.getLastName());
             existingCustomer.setEmail(customer.getEmail());
-
-
+            customerRepository.save(existingCustomer);
+        } else {
+            throw new NoSuchCustomerExistsException("Customer with id " + customer.getId() + " does not exist");
         }
     }
 
     @Override
-    public void deleteCustomer(Customer customer) {
+    public void deleteCustomer(Long id) {
+        Customer existingCustomer = customerMapper.toEntity(this.getCustomer(id)) ;
+        if (existingCustomer != null) {
+            customerRepository.delete(existingCustomer);
+        } else throw new NoSuchCustomerExistsException("Customer with id " + id + " does not exist");
 
     }
 
     @Override
-    public List<Customer> getCustomers() {
-        return customerRepository.findAll();
+    public List<CustomerDto> getCustomers() {
+        return customerMapper.toDtos(customerRepository.findAll());
     }
 }

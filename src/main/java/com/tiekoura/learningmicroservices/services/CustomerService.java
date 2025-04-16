@@ -1,18 +1,18 @@
 package com.tiekoura.learningmicroservices.services;
 
-import com.tiekoura.learningmicroservices.entities.Customer;
+import com.tiekoura.learningmicroservices.dto.CustomerDto;
 
 import java.util.List;
 
 
 public interface CustomerService {
-    Customer addCustomer(Customer customer);
+    CustomerDto addCustomer(CustomerDto customer);
 
-    Customer getCustomer(Long id);
+    CustomerDto getCustomer(Long id);
 
-    void updateCustomer(Customer customer);
+    void updateCustomer(Long id , CustomerDto customer);
 
-    void deleteCustomer(Customer customer);
+    void deleteCustomer(Long id);
 
-    List<Customer> getCustomers();
+    List<CustomerDto> getCustomers();
 }
